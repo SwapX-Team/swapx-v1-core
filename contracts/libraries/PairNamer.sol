@@ -36,11 +36,12 @@ library PairNamer {
     }
 
     // produces a pair symbol in the format of `🔀${symbol0}:${symbol1}${suffix}`
-    function pairPtSymbol(address token0, address token1) internal view returns (string memory) {
+    function pairPtSymbol(address token0, address token1, string memory suffix) internal view returns (string memory) {
         return string(
             abi.encodePacked(
                 SafeERC20Namer.tokenSymbol(token0),
-                SafeERC20Namer.tokenSymbol(token1)
+                SafeERC20Namer.tokenSymbol(token1),
+                suffix
             )
         );
     }

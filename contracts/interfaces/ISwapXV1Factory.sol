@@ -5,11 +5,19 @@ interface ISwapXV1Factory {
 
     function feeTo() external view returns (address);
 
-    function feeToSetter() external view returns (address);
+    function setter() external view returns (address);
+
+    function miner() external view returns (address);
+
+    function token2Pair(address token) external view returns (address pair);
+
+    function pair2Token(address pair) external view returns (address pToken);
 
     function getPair(address tokenA, address tokenB) external view returns (address pair);
 
     function allPairs(uint) external view returns (address pair);
+
+    function pairTokens(uint) external view returns (address pair);
 
     function allPairsLength() external view returns (uint);
 
@@ -17,5 +25,8 @@ interface ISwapXV1Factory {
 
     function setFeeTo(address) external;
 
-    function setFeeToSetter(address) external;
+    function setSetter(address) external;
+
+    function setMiner(address) external;
+
 }
