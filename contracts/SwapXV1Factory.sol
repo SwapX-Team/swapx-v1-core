@@ -29,7 +29,7 @@ contract SwapXV1Factory is ISwapXV1Factory{
 
     function createPair(address tokenA, address tokenB) external returns (address pair, address pToken) {
         require(miner != address(0), 'SwapxV1: MINER INVALID');
-//        require(pToken != address(0), 'SwapxV1: pToken INVALID');
+        //        require(pToken != address(0), 'SwapxV1: pToken INVALID');
         require(tokenA != tokenB, 'SwapxV1: IDENTICAL_ADDRESSES');
         (address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
         require(token0 != address(0), 'SwapxV1: ZERO_ADDRESS');
@@ -45,8 +45,9 @@ contract SwapXV1Factory is ISwapXV1Factory{
             pToken := create2(0, add(bytecode1, 32), mload(bytecode1), salt)
         }
         ISwapXV1Pair(pair).initialize(token0, token1);
-        ISwapXPTV1(pToken).initialize("Pair Token", PairNamer.pairPtSymbol(tokenA, tokenB, "X"), 5760000 * 10 ** 18);
-        ISwapXPTV1(pToken).transferOwnership(miner);
+        ISwapXToken(pToken).initialize("Pair Token", PairNamer.pairPtSymbol(tokenA, tokenB, "X"), 5760000 * 10 ** 18);
+        ISwapXToken(pToken).addIssuer(miner);
+        ISwapXToken(pToken).transferOwnership(msg.sender);
         getPair[token0][token1] = pair;
         getPair[token1][token0] = pair;
         token2Pair[pToken] = pair;

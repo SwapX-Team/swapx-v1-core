@@ -1,12 +1,12 @@
 pragma solidity ^0.5.16;
 
 import '../libraries/SafeMath.sol';
-import "../interfaces/ISwapXPTV1.sol";
+import "../interfaces/ISwapXToken.sol";
 import "../interfaces/IERC20.sol";
 
 import './SwapXPTStorage.sol';
 
-contract SwapXToken is SwapXPTStorage, IERC20, ISwapXPTV1 {
+contract SwapXToken is SwapXPTStorage, IERC20, ISwapXToken {
 
     using SafeMath for uint;
 
