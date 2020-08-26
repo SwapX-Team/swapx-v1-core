@@ -13,32 +13,12 @@ contract CustomToken is SwapXPTStorage, IERC20  {
      * Non-Standard Events
      */
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-    event Paused(address account);
-    event Unpaused(address account);
-    event AddressFrozen(address indexed addr);
-    event AddressUnfrozen(address indexed addr);
-    event FrozenAddressWiped(address indexed addr);
 
     /*
      * Modifyiers
      */
     modifier onlyOwner() {
         require(isOwner(), "Caller is not the owner");
-        _;
-    }
-
-    modifier whenNotPaused() {
-        require(!paused, "Contract is paused.");
-        _;
-    }
-
-    modifier whenPaused() {
-        require(paused, "Contract is not paused.");
-        _;
-    }
-
-    modifier onlyComplianceRole() {
-        require(complianceRole[msg.sender], "The caller does not have compliance role privileges");
         _;
     }
 
@@ -60,7 +40,6 @@ contract CustomToken is SwapXPTStorage, IERC20  {
         if (initialSupply >= 0) _mint(msg.sender, initialSupply);
 
         owner = msg.sender;
-        complianceRole[msg.sender] = true;
         issuer[msg.sender] = true;
     }
 
@@ -78,27 +57,10 @@ contract CustomToken is SwapXPTStorage, IERC20  {
      */
     function transferOwnership(address newOwner) external onlyOwner {
         require(newOwner != address(0), "Ownable: new owner is the zero address");
-        require(!frozen[msg.sender], "Owner address is frozen");
-        require(!frozen[newOwner], "New owner address frozen");
         emit OwnershipTransferred(owner, newOwner);
         owner = newOwner;
     }
 
-    /**
-     * Allows the contract owner to pause the token (stop all transfers)
-     */
-    function pause() external onlyOwner whenNotPaused {
-        paused = true;
-        emit Paused(msg.sender);
-    }
-
-    /**
-     * Allows the contract owner to unpause the token
-     */
-    function unpause() external onlyOwner whenPaused {
-        paused = false;
-        emit Unpaused(msg.sender);
-    }
 
     /**
      * Returns the name of the token
@@ -122,7 +84,7 @@ contract CustomToken is SwapXPTStorage, IERC20  {
     }
 
     /**
-     * Returns the total supply of USDD.
+     * Returns the total supply.
      */
     function totalSupply() external view returns (uint256) {
         return _totalSupply;
@@ -137,12 +99,11 @@ contract CustomToken is SwapXPTStorage, IERC20  {
     }
 
     /**
-     * Transfers balance from the message sender to the recipient if the accounts are not frozen.
+     * Transfers balance from the message sender to the recipient
      * @param recipient The address to send the balance to
      * @param amount The balance to transfer
      */
-    function transfer(address recipient, uint256 amount) external whenNotPaused returns (bool) {
-        require(!frozen[recipient] && !frozen[msg.sender], "address frozen");
+    function transfer(address recipient, uint256 amount) external returns (bool) {
         _transfer(msg.sender, recipient, amount);
         return true;
     }
@@ -161,8 +122,7 @@ contract CustomToken is SwapXPTStorage, IERC20  {
      * @param spender The address that is granted the allowance.
      * @param value The amount that is granted to the spender.
      */
-    function approve(address spender, uint256 value) external whenNotPaused returns (bool) {
-        require(!frozen[spender] && !frozen[msg.sender], "address frozen");
+    function approve(address spender, uint256 value) external returns (bool) {
         _approve(msg.sender, spender, value);
         return true;
     }
@@ -173,8 +133,8 @@ contract CustomToken is SwapXPTStorage, IERC20  {
      * @param recipient The address to transfer the balance to.
      * @param amount The amount that is transfered.
      */
-    function transferFrom(address sender, address recipient, uint256 amount) external whenNotPaused returns (bool) {
-        require(!frozen[sender] && !frozen[recipient] && !frozen[msg.sender], "address frozen");
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool) {
+        //        require(!frozen[sender] && !frozen[recipient] && !frozen[msg.sender], "address frozen");
         _transfer(sender, recipient, amount);
         _approve(sender, msg.sender, _allowances[sender][msg.sender].sub(amount));
         return true;
@@ -185,8 +145,8 @@ contract CustomToken is SwapXPTStorage, IERC20  {
      * @param spender The address that is granted the allowance.
      * @param addedValue The amount that is granted.
      */
-    function increaseAllowance(address spender, uint256 addedValue) external whenNotPaused returns (bool) {
-        require(!frozen[spender] && !frozen[msg.sender], "address frozen");
+    function increaseAllowance(address spender, uint256 addedValue) external returns (bool) {
+        //        require(!frozen[spender] && !frozen[msg.sender], "address frozen");
         _approve(msg.sender, spender, _allowances[msg.sender][spender].add(addedValue));
         return true;
     }
@@ -196,8 +156,8 @@ contract CustomToken is SwapXPTStorage, IERC20  {
      * @param spender The address that is granted the allowance.
      * @param subtractedValue The amount that is reduced.
      */
-    function decreaseAllowance(address spender, uint256 subtractedValue) external whenNotPaused returns (bool) {
-        require(!frozen[spender] && !frozen[msg.sender], "address frozen");
+    function decreaseAllowance(address spender, uint256 subtractedValue) external returns (bool) {
+        //        require(!frozen[spender] && !frozen[msg.sender], "address frozen");
         _approve(msg.sender, spender, _allowances[msg.sender][spender].sub(subtractedValue));
         return true;
     }
@@ -220,63 +180,6 @@ contract CustomToken is SwapXPTStorage, IERC20  {
     function redeem(address account, uint256 amount) external onlyIssuer returns (bool) {
         _burn(account, amount);
         return true;
-    }
-
-    /**
-     * @dev Freezes an address balance from being transferred.
-     * @param _addr The new address to freeze.
-     */
-    function freeze(address _addr) public onlyComplianceRole {
-        require(!frozen[_addr], "address already frozen");
-        frozen[_addr] = true;
-        emit AddressFrozen(_addr);
-    }
-
-    /**
-     * @dev Unfreezes an address balance allowing transfer.
-     * @param _addr The new address to unfreeze.
-     */
-    function unfreeze(address _addr) public onlyComplianceRole {
-        require(frozen[_addr], "address already unfrozen");
-        frozen[_addr] = false;
-        emit AddressUnfrozen(_addr);
-    }
-
-    /**
-     * @dev Wipes the balance of a frozen address, burning the tokens
-     * and setting the approval to zero.
-     * @param _addr The new frozen address to wipe.
-     */
-    function wipeFrozenAddress(address _addr) public onlyComplianceRole {
-        require(frozen[_addr], "address is not frozen");
-        _burn(_addr,balanceOf(_addr));
-        emit FrozenAddressWiped(_addr);
-    }
-
-    /**
-    * @dev Adds a complianceRole address with specific regulatory compliance privileges.
-    * @param _addr The address to be added
-    */
-    function addComplianceRole(address _addr) public onlyOwner returns (bool) {
-        require(_addr != address(0), "address cannot be 0");
-        if(complianceRole[_addr] == false) {
-            complianceRole[_addr] = true;
-            return true;
-        }
-        return false;
-    }
-
-    /**
-    * @dev Removes complianceRole address with specific regulatory compliance privileges.
-    * @param _addr The address to be removed
-    */
-    function removeComplianceRole(address _addr) public onlyOwner returns (bool) {
-        require(_addr != address(0), "address cannot be 0");
-        if(complianceRole[_addr] == true) {
-            complianceRole[_addr] = false;
-            return true;
-        }
-        return false;
     }
 
     /**

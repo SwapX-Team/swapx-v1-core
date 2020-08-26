@@ -59,7 +59,7 @@ contract SwapXV1Factory is ISwapXV1Factory{
     }
 
     function setMiner(address _miner) external {
-        require(isContract(_miner),"miner must be contract");
+        require(isContract(_miner),"SwapXV1: miner must be contract");
         require(msg.sender == setter, 'SwapXV1: FORBIDDEN');
         miner = _miner;
     }

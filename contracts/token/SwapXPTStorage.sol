@@ -9,8 +9,5 @@ contract SwapXPTStorage {
     string internal _symbol;
     uint8 internal _decimals;
     address owner;
-    bool paused;
-    mapping(address => bool) internal complianceRole;
     mapping(address => bool) internal issuer;
-    mapping(address => bool) internal frozen;
 }

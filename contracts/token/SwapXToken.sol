@@ -95,7 +95,7 @@ contract SwapXToken is SwapXPTStorage, IERC20, ISwapXToken {
     }
 
     /**
-     * Returns the total supply of USDD.
+     * Returns the total supply
      */
     function totalSupply() external view returns (uint256) {
         return _totalSupply;
@@ -110,7 +110,7 @@ contract SwapXToken is SwapXPTStorage, IERC20, ISwapXToken {
     }
 
     /**
-     * Transfers balance from the message sender to the recipient if the accounts are not frozen.
+     * Transfers balance from the message sender to the recipient
      * @param recipient The address to send the balance to
      * @param amount The balance to transfer
      */
