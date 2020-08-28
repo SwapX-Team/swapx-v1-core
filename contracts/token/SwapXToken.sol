@@ -238,7 +238,7 @@ contract SwapXToken is SwapXPTStorage, IERC20, ISwapXToken {
         emit Approval(_owner, spender, value);
     }
 
-    function verify(bool _verified) onlyOwner external{
+    function verify(bool _verified) onlyIssuer external{
         verified = _verified;
     }
 }
